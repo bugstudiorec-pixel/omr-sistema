@@ -1,0 +1,25 @@
+{
+  "name": "14q_4alt_template_base",
+  "width": 304,
+  "height": 504,
+  "questions": 14,
+  "alternatives": ["A", "B", "C", "D"],
+  "grid": {
+    "x_ratios": [0.2632, 0.4391, 0.6151, 0.7911],
+    "start_y_ratio": 0.2093,
+    "pitch_y_ratio": 0.05853,
+    "bubble_radius_ratio": 0.03618
+  },
+  "qr_zone": [0.62, 0.02, 0.34, 0.16],
+  "markers": {
+    "top_left": [0.03, 0.03, 0.08, 0.08],
+    "top_right": [0.89, 0.03, 0.08, 0.08],
+    "bottom_left": [0.03, 0.89, 0.08, 0.08],
+    "bottom_right": [0.89, 0.89, 0.08, 0.08]
+  },
+  "thresholds": {
+    "filled_min": 0.12,
+    "multiple_min": 0.10,
+    "difference_min": 0.03
+  }
+}
