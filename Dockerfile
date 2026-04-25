@@ -1,6 +1,7 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
+    nginx \
     python3 \
     python3-pip \
     python3-dev \
@@ -21,19 +22,9 @@ RUN pip3 install --break-system-packages \
     qrcode[pil] \
     pillow
 
-# Remove todos os MPMs e ativa só o prefork
-RUN for f in /etc/apache2/mods-enabled/mpm_*.{load,conf}; do rm -f "$f"; done \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
-    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
-    && a2enmod rewrite
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-RUN printf '<Directory /var/www/html/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' \
-    >> /etc/apache2/apache2.conf
+COPY docker/nginx.conf /etc/nginx/sites-available/default
 
 COPY . /var/www/html/
 
@@ -46,10 +37,8 @@ RUN mkdir -p /var/www/html/data \
                     /var/www/html/uploads \
                     /var/www/html/temp
 
-RUN ln -sf /usr/bin/python3 /usr/bin/python
-
-# Testa a configuração do Apache antes de subir
-RUN apache2ctl configtest
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
-CMD ["apache2-foreground"]
+CMD ["/start.sh"]
