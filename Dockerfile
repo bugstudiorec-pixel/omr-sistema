@@ -21,21 +21,19 @@ RUN pip3 install --break-system-packages \
     qrcode[pil] \
     pillow
 
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
-          /etc/apache2/mods-enabled/mpm_*.conf \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
+# Remove todos os MPMs e ativa só o prefork
+RUN for f in /etc/apache2/mods-enabled/mpm_*.{load,conf}; do rm -f "$f"; done \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
     && a2enmod rewrite
 
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-RUN echo '<Directory /var/www/html/public>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/apache2.conf
+RUN printf '<Directory /var/www/html/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' \
+    >> /etc/apache2/apache2.conf
 
 COPY . /var/www/html/
 
@@ -50,4 +48,8 @@ RUN mkdir -p /var/www/html/data \
 
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
+# Testa a configuração do Apache antes de subir
+RUN apache2ctl configtest
+
 EXPOSE 80
+CMD ["apache2-foreground"]
