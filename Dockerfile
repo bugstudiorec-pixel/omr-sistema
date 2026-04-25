@@ -24,9 +24,9 @@ RUN pip3 install --break-system-packages \
 
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-COPY docker/nginx.conf /etc/nginx/sites-available/default
-
 COPY . /var/www/html/
+
+RUN cp /var/www/html/nginx.conf /etc/nginx/sites-available/default
 
 RUN mkdir -p /var/www/html/data \
              /var/www/html/uploads/scans \
@@ -37,8 +37,8 @@ RUN mkdir -p /var/www/html/data \
                     /var/www/html/uploads \
                     /var/www/html/temp
 
-COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+RUN cp /var/www/html/start.sh /start.sh \
+    && chmod +x /start.sh
 
 EXPOSE 80
 CMD ["/start.sh"]
